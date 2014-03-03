@@ -17,7 +17,8 @@ public class LoginAsycnTaskAction extends
 
 	public ILoginTask iLogin;
 
-	public LoginAsycnTaskAction(List<NameValuePair> postParams, ILoginTask iLogin) {
+	public LoginAsycnTaskAction(List<NameValuePair> postParams,
+			ILoginTask iLogin) {
 		super(LOGIN_URL, postParams);
 		this.iLogin = iLogin;
 	}
@@ -42,5 +43,9 @@ public class LoginAsycnTaskAction extends
 			e.printStackTrace();
 		}
 		iLogin.loginFailed();
+	}
+
+	@Override
+	protected void onCancelled() {
 	}
 }

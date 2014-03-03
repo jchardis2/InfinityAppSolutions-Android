@@ -225,10 +225,9 @@ public class LoginActivity extends Activity implements ILoginTask {
 	}
 
 	@Override
-	public void onCancel() {
+	public void onCancelled() {
 		mAuthTask = null;
 		showProgress(false);
-
 	}
 
 }
