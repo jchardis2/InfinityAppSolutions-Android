@@ -1,10 +1,17 @@
-package com.infinityappsolutions.android.lib;
+package com.infinityappsolutions.android.webterms;
+
+import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.apache.http.NameValuePair;
+import org.apache.http.message.BasicNameValuePair;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
 import android.app.Activity;
-import android.os.AsyncTask;
+import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -15,13 +22,17 @@ import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.TextView;
 
-
+import com.google.gson.reflect.TypeToken;
+import com.infinityappsolutions.android.lib.actions.LoginAsycnTaskAction;
+import com.infinityappsolutions.android.lib.interfaces.ILoginTask;
+import com.infinityappsolutions.lib.beans.UserBean;
+import com.infinityappsolutions.lib.gson.IASGson;
 
 /**
  * Activity which displays a login screen to the user, offering registration as
  * well.
  */
-public class LoginActivity extends Activity {
+public class LoginActivity extends Activity implements ILoginTask {
 	/**
 	 * A dummy authentication store containing known user names and passwords.
 	 * TODO: remove after connecting to a real authentication system.
@@ -37,7 +48,7 @@ public class LoginActivity extends Activity {
 	/**
 	 * Keep track of the login task to ensure we can cancel it if requested.
 	 */
-	private UserLoginTask mAuthTask = null;
+	private LoginAsycnTaskAction mAuthTask = null;
 
 	// Values for email and password at the time of the login attempt.
 	private String mEmail;
@@ -54,7 +65,7 @@ public class LoginActivity extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-		setContentView(R.layout.lib_activity_login);
+		setContentView(R.layout.activity_login);
 
 		// Set up the login form.
 		mEmail = getIntent().getStringExtra(EXTRA_EMAIL);
@@ -121,22 +132,24 @@ public class LoginActivity extends Activity {
 			mPasswordView.setError(getString(R.string.error_field_required));
 			focusView = mPasswordView;
 			cancel = true;
-		} else if (mPassword.length() < 4) {
-			mPasswordView.setError(getString(R.string.error_invalid_password));
-			focusView = mPasswordView;
-			cancel = true;
 		}
+		// else if (mPassword.length() < 4) {
+		// mPasswordView.setError(getString(R.string.error_invalid_password));
+		// focusView = mPasswordView;
+		// cancel = true;
+		// }
 
 		// Check for a valid email address.
 		if (TextUtils.isEmpty(mEmail)) {
 			mEmailView.setError(getString(R.string.error_field_required));
 			focusView = mEmailView;
 			cancel = true;
-		} else if (!mEmail.contains("@")) {
-			mEmailView.setError(getString(R.string.error_invalid_email));
-			focusView = mEmailView;
-			cancel = true;
 		}
+		// else if (!mEmail.contains("@")) {
+		// mEmailView.setError(getString(R.string.error_invalid_email));
+		// focusView = mEmailView;
+		// cancel = true;
+		// }
 
 		if (cancel) {
 			// There was an error; don't attempt login and focus the first
@@ -147,7 +160,11 @@ public class LoginActivity extends Activity {
 			// perform the user login attempt.
 			mLoginStatusMessageView.setText(R.string.login_progress_signing_in);
 			showProgress(true);
-			mAuthTask = new UserLoginTask();
+			// mAuthTask = new UserLoginTask();
+			List<NameValuePair> postParams = new ArrayList<NameValuePair>();
+			postParams.add(new BasicNameValuePair("login-username", mEmail));
+			postParams.add(new BasicNameValuePair("login-password", mPassword));
+			mAuthTask = new LoginAsycnTaskAction(postParams, this);
 			mAuthTask.execute((Void) null);
 		}
 	}
@@ -193,52 +210,31 @@ public class LoginActivity extends Activity {
 		}
 	}
 
-	/**
-	 * Represents an asynchronous login/registration task used to authenticate
-	 * the user.
-	 */
-	public class UserLoginTask extends AsyncTask<Void, Void, Boolean> {
-		@Override
-		protected Boolean doInBackground(Void... params) {
-			// TODO: attempt authentication against a network service.
+	@Override
+	public void loginSuccess(String pageContents) {
+		mAuthTask = null;
+		showProgress(false);
 
-			try {
-				// Simulate network access.
-				Thread.sleep(2000);
-			} catch (InterruptedException e) {
-				return false;
-			}
+		IASGson<UserBean> iasGson = new IASGson<UserBean>();
+		Type userBeanTypeToken = new TypeToken<UserBean>() {
+		}.getType();
+		UserBean ub = iasGson.fromGson(pageContents, userBeanTypeToken);
 
-			for (String credential : DUMMY_CREDENTIALS) {
-				String[] pieces = credential.split(":");
-				if (pieces[0].equals(mEmail)) {
-					// Account exists, return true if the password matches.
-					return pieces[1].equals(mPassword);
-				}
-			}
-
-			// TODO: register the new account here.
-			return true;
-		}
-
-		@Override
-		protected void onPostExecute(final Boolean success) {
-			mAuthTask = null;
-			showProgress(false);
-
-			if (success) {
-				finish();
-			} else {
-				mPasswordView
-						.setError(getString(R.string.error_incorrect_password));
-				mPasswordView.requestFocus();
-			}
-		}
-
-		@Override
-		protected void onCancelled() {
-			mAuthTask = null;
-			showProgress(false);
-		}
+		Intent intent = new Intent(this, HomeActivity.class);
+		startActivity(intent);
 	}
+
+	@Override
+	public void loginFailed() {
+		mPasswordView.setError(getString(R.string.error_incorrect_password));
+		mPasswordView.requestFocus();
+	}
+
+	@Override
+	public void onCancel() {
+		mAuthTask = null;
+		showProgress(false);
+
+	}
+
 }
