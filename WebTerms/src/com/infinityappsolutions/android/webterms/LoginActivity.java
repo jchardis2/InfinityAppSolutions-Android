@@ -33,17 +33,11 @@ import com.infinityappsolutions.lib.gson.IASGson;
  * well.
  */
 public class LoginActivity extends Activity implements ILoginTask {
-	/**
-	 * A dummy authentication store containing known user names and passwords.
-	 * TODO: remove after connecting to a real authentication system.
-	 */
-	private static final String[] DUMMY_CREDENTIALS = new String[] {
-			"foo@example.com:hello", "bar@example.com:world" };
 
 	/**
 	 * The default email to populate the email field with.
 	 */
-	public static final String EXTRA_EMAIL = "com.example.android.authenticatordemo.extra.EMAIL";
+	public static final String EXTRA_USERNAME = "com.infinityappsolutions.android.webterms.extra.EMAIL";
 
 	/**
 	 * Keep track of the login task to ensure we can cancel it if requested.
@@ -51,11 +45,11 @@ public class LoginActivity extends Activity implements ILoginTask {
 	private LoginAsycnTaskAction mAuthTask = null;
 
 	// Values for email and password at the time of the login attempt.
-	private String mEmail;
+	private String mUsername;
 	private String mPassword;
 
 	// UI references.
-	private EditText mEmailView;
+	private EditText mUsernameView;
 	private EditText mPasswordView;
 	private View mLoginFormView;
 	private View mLoginStatusView;
@@ -68,9 +62,9 @@ public class LoginActivity extends Activity implements ILoginTask {
 		setContentView(R.layout.activity_login);
 
 		// Set up the login form.
-		mEmail = getIntent().getStringExtra(EXTRA_EMAIL);
-		mEmailView = (EditText) findViewById(R.id.email);
-		mEmailView.setText(mEmail);
+		mUsername = getIntent().getStringExtra(EXTRA_USERNAME);
+		mUsernameView = (EditText) findViewById(R.id.username);
+		mUsernameView.setText(mUsername);
 
 		mPasswordView = (EditText) findViewById(R.id.password);
 		mPasswordView
@@ -117,11 +111,11 @@ public class LoginActivity extends Activity implements ILoginTask {
 		}
 
 		// Reset errors.
-		mEmailView.setError(null);
+		mUsernameView.setError(null);
 		mPasswordView.setError(null);
 
 		// Store values at the time of the login attempt.
-		mEmail = mEmailView.getText().toString();
+		mUsername = mUsernameView.getText().toString();
 		mPassword = mPasswordView.getText().toString();
 
 		boolean cancel = false;
@@ -140,9 +134,9 @@ public class LoginActivity extends Activity implements ILoginTask {
 		// }
 
 		// Check for a valid email address.
-		if (TextUtils.isEmpty(mEmail)) {
-			mEmailView.setError(getString(R.string.error_field_required));
-			focusView = mEmailView;
+		if (TextUtils.isEmpty(mUsername)) {
+			mUsernameView.setError(getString(R.string.error_field_required));
+			focusView = mUsernameView;
 			cancel = true;
 		}
 		// else if (!mEmail.contains("@")) {
@@ -162,7 +156,7 @@ public class LoginActivity extends Activity implements ILoginTask {
 			showProgress(true);
 			// mAuthTask = new UserLoginTask();
 			List<NameValuePair> postParams = new ArrayList<NameValuePair>();
-			postParams.add(new BasicNameValuePair("login-username", mEmail));
+			postParams.add(new BasicNameValuePair("login-username", mUsername));
 			postParams.add(new BasicNameValuePair("login-password", mPassword));
 			mAuthTask = new LoginAsycnTaskAction(postParams, this);
 			mAuthTask.execute((Void) null);
