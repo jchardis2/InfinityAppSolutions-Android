@@ -5,12 +5,14 @@ import java.util.List;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 
+import android.util.Log;
+
 import com.infinityappsolutions.android.lib.web.IASWebConnection;
 
 public class WebConnectionAsyncTask<Params, Progress, Result> extends
 		AbstractAsyncTaskAction<Void, Progress, HttpResponse> {
-	private String url;
-	private List<NameValuePair> postParams;
+	protected String url;
+	protected List<NameValuePair> postParams;
 
 	public WebConnectionAsyncTask(String url, List<NameValuePair> postParams) {
 		this.url = url;
@@ -25,7 +27,7 @@ public class WebConnectionAsyncTask<Params, Progress, Result> extends
 					postParams);
 			return response;
 		} catch (Exception e) {
-			e.printStackTrace();
+			Log.e(this.getClass().getName(), e.getMessage());
 		}
 		return null;
 	}

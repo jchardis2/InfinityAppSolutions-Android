@@ -2,7 +2,7 @@ package com.infinityappsolutions.android.lib.settings;
 
 import java.util.Set;
 
-import android.app.Activity;
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 
@@ -12,12 +12,12 @@ public class SettingsHelper {
 	private SharedPreferences settings;
 	private SharedPreferences.Editor editor;
 
-	private SettingsHelper(Activity activity) {
-		init(activity);
+	public SettingsHelper(Context context) {
+		init(context);
 	}
 
-	private void init(Activity activity) {
-		settings = activity.getSharedPreferences(PREFS_NAME, 0);
+	private void init(Context context) {
+		settings = context.getSharedPreferences(PREFS_NAME, 0);
 		editor = settings.edit();
 	}
 

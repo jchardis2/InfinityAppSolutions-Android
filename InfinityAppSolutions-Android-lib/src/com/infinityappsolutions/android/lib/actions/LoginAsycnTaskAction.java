@@ -6,6 +6,8 @@ import java.util.List;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 
+import android.util.Log;
+
 import com.infinityappsolutions.android.lib.interfaces.ILoginTask;
 import com.infinityappsolutions.android.lib.web.IASWebConnection;
 
@@ -24,28 +26,50 @@ public class LoginAsycnTaskAction extends
 	}
 
 	@Override
+	protected HttpResponse doInBackground(Void... params) {
+		IASWebConnection connection = IASWebConnection.getDefaultInstance();
+		HttpResponse homeResponse = null;
+		try {
+			HttpResponse response = super.doInBackground(params);
+			if (response != null) {
+				homeResponse = connection.sendPostForResponse(HOME_URL,
+						super.postParams);
+				return homeResponse;
+			}
+		} catch (Exception e) {
+			Log.e(this.getClass().getName(), e.getMessage());
+		}
+		return homeResponse;
+	}
+
+	@Override
 	protected void onPostExecute(HttpResponse response) {
 		super.onPostExecute(response);
-		try {
-			IASWebConnection iasWebConnection = IASWebConnection
-					.getDefaultInstance();
-			String currentURL = iasWebConnection.getResponseLocation(response);
-			if (!currentURL.contains(HOME_URL)) {
-				String webPageString = iasWebConnection
-						.getResponseString(response);
-				iLogin.loginSuccess(webPageString);
+		if (response != null) {
+			try {
+				IASWebConnection iasWebConnection = IASWebConnection
+						.getDefaultInstance();
+				String currentURL = iasWebConnection
+						.getResponseLocation(response);
+				if (currentURL != null && !currentURL.contains(HOME_URL)) {
+					String webPageString = iasWebConnection
+							.getResponsePageContents(response);
+					iLogin.loginSuccess(webPageString);
+					return;
+				}
+			} catch (IllegalStateException e) {
+				Log.e(this.getClass().getName(), e.getMessage());
+			} catch (IOException e) {
+				Log.e(this.getClass().getName(), e.getMessage());
+			} catch (Exception e) {
+				Log.e(this.getClass().getName(), e.getMessage());
 			}
-		} catch (IllegalStateException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
 		}
 		iLogin.loginFailed();
 	}
 
 	@Override
 	protected void onCancelled() {
+		iLogin.onCancelled();
 	}
 }

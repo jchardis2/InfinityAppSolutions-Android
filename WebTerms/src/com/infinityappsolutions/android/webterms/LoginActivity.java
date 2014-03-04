@@ -19,12 +19,14 @@ import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.TextView;
 
 import com.google.gson.reflect.TypeToken;
 import com.infinityappsolutions.android.lib.actions.LoginAsycnTaskAction;
 import com.infinityappsolutions.android.lib.interfaces.ILoginTask;
+import com.infinityappsolutions.android.lib.settings.SettingsHelper;
 import com.infinityappsolutions.lib.beans.UserBean;
 import com.infinityappsolutions.lib.gson.IASGson;
 
@@ -38,6 +40,8 @@ public class LoginActivity extends Activity implements ILoginTask {
 	 * The default email to populate the email field with.
 	 */
 	public static final String EXTRA_USERNAME = "com.infinityappsolutions.android.webterms.extra.EMAIL";
+	public static final String EXTRA_PASSWORD = "com.infinityappsolutions.android.webterms.extra.PASSWORD";
+	public static final String EXTRA_REMEMBER_ME = "com.infinityappsolutions.android.webterms.extra.REMEMBER_ME";
 
 	/**
 	 * Keep track of the login task to ensure we can cancel it if requested.
@@ -54,6 +58,7 @@ public class LoginActivity extends Activity implements ILoginTask {
 	private View mLoginFormView;
 	private View mLoginStatusView;
 	private TextView mLoginStatusMessageView;
+	private SettingsHelper helper;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -94,6 +99,18 @@ public class LoginActivity extends Activity implements ILoginTask {
 	}
 
 	@Override
+	public void onResume() {
+		super.onResume();
+		helper = new SettingsHelper(getApplicationContext());
+		if (helper.getBoolean(EXTRA_REMEMBER_ME, false)) {
+			mUsernameView.setText(helper.getString(EXTRA_USERNAME, ""));
+			mPasswordView.setText(helper.getString(EXTRA_PASSWORD, ""));
+			CheckBox box = (CheckBox) findViewById(R.id.remember_me_checkbox);
+			box.setChecked(true);
+		}
+	}
+
+	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		super.onCreateOptionsMenu(menu);
 		getMenuInflater().inflate(R.menu.login, menu);
@@ -117,6 +134,14 @@ public class LoginActivity extends Activity implements ILoginTask {
 		// Store values at the time of the login attempt.
 		mUsername = mUsernameView.getText().toString();
 		mPassword = mPasswordView.getText().toString();
+
+		CheckBox box = (CheckBox) findViewById(R.id.remember_me_checkbox);
+		helper.putBoolean(EXTRA_REMEMBER_ME, box.isChecked());
+		if (box.isChecked()) {
+			helper.putString(EXTRA_USERNAME, mUsername);
+			helper.putString(EXTRA_PASSWORD, mPassword);
+		}
+		helper.commit();
 
 		boolean cancel = false;
 		View focusView = null;
@@ -222,6 +247,7 @@ public class LoginActivity extends Activity implements ILoginTask {
 	public void loginFailed() {
 		mPasswordView.setError(getString(R.string.error_incorrect_password));
 		mPasswordView.requestFocus();
+		showProgress(false);
 	}
 
 	@Override

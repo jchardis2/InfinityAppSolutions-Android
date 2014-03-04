@@ -3,7 +3,15 @@
 
     <string name="app_name">WebTerms</string>
     <string name="action_settings">Settings</string>
-    <string name="hello_world">Hello world!</string>
+    <string name="hello_world">You are home</string>
     <string name="title_activity_home">HomeActivity</string>
+
+    <!-- Home layout -->
+    <string-array name="home_drawer_strings">
+        <item>Home</item>
+        <item>My Terms</item>
+        <item>My Term Groups</item>
+        <item>Explore</item>
+    </string-array>
 
 </resources>

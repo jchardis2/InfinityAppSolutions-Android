@@ -8,6 +8,7 @@ import java.net.CookieManager;
 import java.net.HttpURLConnection;
 import java.util.List;
 
+import org.apache.http.Header;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.ClientProtocolException;
@@ -66,7 +67,6 @@ public class IASWebConnection {
 			IOException {
 
 		HttpPost post = new HttpPost(url);
-
 		// add header
 		post.setHeader("Host", "infinityappsoltuions.com");
 		post.setHeader("Accept",
@@ -100,7 +100,7 @@ public class IASWebConnection {
 		return line;
 	}
 
-	public String getResponseString(HttpResponse response)
+	public String getResponsePageContents(HttpResponse response)
 			throws IllegalStateException, IOException {
 		BufferedReader rd = new BufferedReader(new InputStreamReader(response
 				.getEntity().getContent()));
@@ -110,11 +110,15 @@ public class IASWebConnection {
 		while ((line = rd.readLine()) != null) {
 			result.append(line + "\n");
 		}
-		return line;
+		return result.toString();
 	}
 
 	public String getResponseLocation(HttpResponse response) {
-		return response.getLastHeader("Location").getValue();
+		Header lastHeader = response.getLastHeader("Location");
+		if (lastHeader != null) {
+			return response.getLastHeader("Location").getValue();
+		}
+		return null;
 	}
 
 	public int getResponseStatusCode(HttpResponse response) {
