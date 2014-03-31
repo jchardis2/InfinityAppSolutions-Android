@@ -1,6 +1,5 @@
 package com.infinityappsolutions.android.webterms;
 
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,6 +10,8 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
@@ -23,18 +24,22 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.TextView;
 
-import com.google.gson.reflect.TypeToken;
-import com.infinityappsolutions.android.lib.actions.LoginAsycnTaskAction;
+import com.infinityappsolutions.android.lib.asyntasks.actions.LoginAsycnTaskAction;
+import com.infinityappsolutions.android.lib.factory.DialogFactory;
 import com.infinityappsolutions.android.lib.interfaces.ILoginTask;
+import com.infinityappsolutions.android.lib.interfaces.ISaveDataBean;
 import com.infinityappsolutions.android.lib.settings.SettingsHelper;
-import com.infinityappsolutions.lib.beans.UserBean;
-import com.infinityappsolutions.lib.gson.IASGson;
+import com.infinityappsolutions.android.webterms.asyntasks.actions.SaveDataBeanAsyncTaskAction;
+import com.infinityappsolutions.android.webterms.factory.DataBeanFactory;
+import com.infinityappsolutions.lib.beans.DataBean;
+import com.infinityappsolutions.lib.webterms.bean.Term;
 
 /**
  * Activity which displays a login screen to the user, offering registration as
  * well.
  */
-public class LoginActivity extends Activity implements ILoginTask {
+public class LoginActivity extends Activity implements ILoginTask,
+		ISaveDataBean<Term> {
 
 	/**
 	 * The default email to populate the email field with.
@@ -234,13 +239,20 @@ public class LoginActivity extends Activity implements ILoginTask {
 		mAuthTask = null;
 		showProgress(false);
 
-		IASGson<UserBean> iasGson = new IASGson<UserBean>();
-		Type userBeanTypeToken = new TypeToken<UserBean>() {
-		}.getType();
-		UserBean ub = iasGson.fromGson(pageContents, userBeanTypeToken);
+		// IASGson<UserBean> iasGson = new IASGson<UserBean>();
+		// Type userBeanTypeToken = new TypeToken<UserBean>() {
+		// }.getType();
+		// UserBean ub = iasGson.fromGson(pageContents, userBeanTypeToken);
+		//
+		// // Save the DataBean
+		// DataBean db = new DataBean();
+		// db.setUb(ub);
+		DataBeanFactory dbFactory = new DataBeanFactory();
+		DataBean<Term> db = dbFactory.getDataBean(pageContents);
 
-		Intent intent = new Intent(this, HomeActivity.class);
-		startActivity(intent);
+		SaveDataBeanAsyncTaskAction action = new SaveDataBeanAsyncTaskAction(
+				db, this, getApplicationContext());
+		action.execute((Void) null);
 	}
 
 	@Override
@@ -254,6 +266,34 @@ public class LoginActivity extends Activity implements ILoginTask {
 	public void onCancelled() {
 		mAuthTask = null;
 		showProgress(false);
+	}
+
+	public void startHomeActivity(DataBean<Term> db) {
+		Intent intent = new Intent(this, HomeActivity.class);
+		intent.putExtra("DataBean", db);
+		startActivity(intent);
+	}
+
+	@Override
+	public void saveDataBeanListener(Boolean isSaved, DataBean<Term> db) {
+		if (isSaved) {
+			startHomeActivity(db);
+		} else {
+			DialogFactory dialogFactory = new DialogFactory();
+			AlertDialog.Builder builder = dialogFactory
+					.getMessageDialogBuilder(getApplicationContext(),
+							R.string.dialog_login_failed);
+			builder.setPositiveButton(R.string.ok,
+					new DialogInterface.OnClickListener() {
+
+						@Override
+						public void onClick(DialogInterface dialog, int which) {
+							loginFailed();
+						}
+					});
+			AlertDialog dialog = dialogFactory.create(builder);
+			dialog.show();
+		}
 	}
 
 }

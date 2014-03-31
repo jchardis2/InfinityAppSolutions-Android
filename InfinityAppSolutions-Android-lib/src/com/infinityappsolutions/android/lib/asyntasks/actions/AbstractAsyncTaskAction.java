@@ -1,4 +1,4 @@
-package com.infinityappsolutions.android.lib.actions;
+package com.infinityappsolutions.android.lib.asyntasks.actions;
 
 import android.os.AsyncTask;
 

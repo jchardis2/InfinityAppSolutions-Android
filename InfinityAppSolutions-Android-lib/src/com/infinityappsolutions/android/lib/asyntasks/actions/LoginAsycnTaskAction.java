@@ -1,4 +1,4 @@
-package com.infinityappsolutions.android.lib.actions;
+package com.infinityappsolutions.android.lib.asyntasks.actions;
 
 import java.io.IOException;
 import java.util.List;
@@ -54,6 +54,7 @@ public class LoginAsycnTaskAction extends
 				if (currentURL != null && !currentURL.contains(HOME_URL)) {
 					String webPageString = iasWebConnection
 							.getResponsePageContents(response);
+					
 					iLogin.loginSuccess(webPageString);
 					return;
 				}
