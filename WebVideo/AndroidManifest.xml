@@ -86,6 +86,12 @@
                 <action android:name="com.google.sample.castcompanionlibrary.action.notificationvisibility" />
             </intent-filter>
         </service>
+
+        <activity
+            android:name="com.google.sample.cast.refplayer.LoginActivity"
+            android:label="@string/title_activity_login"
+            android:windowSoftInputMode="adjustResize|stateVisible" >
+        </activity>
     </application>
 
 </manifest>
